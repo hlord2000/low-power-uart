@@ -7,6 +7,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/uart.h>
+#include <zephyr/pm/device.h>
 
 #include <string.h>
 
@@ -84,10 +85,11 @@ void main(void)
 	print_uart("Hello! I'm your echo bot.\r\n");
 	print_uart("Tell me something and press enter:\r\n");
 
-	/* indefinitely wait for input from the user */
-	while (k_msgq_get(&uart_msgq, &tx_buf, K_FOREVER) == 0) {
-		print_uart("Echo: ");
-		print_uart(tx_buf);
-		print_uart("\r\n");
+	/* Disable UART */
+	uart_rx_disable(uart_dev);
+	pm_device_action_run(uart_dev, PM_DEVICE_ACTION_SUSPEND);
+	pm_device_action_run(uart_dev, PM_DEVICE_ACTION_TURN_OFF);
+	while (true) {
+		k_sleep(K_SECONDS(5));
 	}
 }
