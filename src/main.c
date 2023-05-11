@@ -54,7 +54,7 @@ void main(void)
 
 	int err;
 
-	err = uart_callback_set(uart_dev, uart_callback, NULL);
+	//err = uart_callback_set(uart_dev, uart_callback, NULL);
 	if (err) {
 		printk("Cannot set UART callback: %d\n", err);
 		return;
@@ -63,13 +63,20 @@ void main(void)
 
 	/* configure interrupt and callback to receive data */
 
-	print_uart("Hello! I'm your echo bot.\r\n");
-	print_uart("Tell me something and press enter:\r\n");
+	print_uart("Hello world!\r\n");
+	k_sleep(K_SECONDS(1));
 
 	/* Disable UART */
-	uart_rx_disable(uart_dev);
-	pm_device_action_run(uart_dev, PM_DEVICE_ACTION_SUSPEND);
-	pm_device_action_run(uart_dev, PM_DEVICE_ACTION_TURN_OFF);
+	err = uart_rx_disable(uart_dev);
+	// Will need to await uart_rx_disable event to return before turning everything off. Handle in callback.
+	// I just put a busy wait here for demonstration
+	k_sleep(K_SECONDS(1));
+	if (err) {
+		printk("Cannot disable UART: %d\n", err);
+		return;
+	}
+	err = pm_device_action_run(uart_dev, PM_DEVICE_ACTION_SUSPEND);
+	err = pm_device_action_run(uart_dev, PM_DEVICE_ACTION_TURN_OFF);
 	while (true) {
 		k_sleep(K_SECONDS(5));
 	}
